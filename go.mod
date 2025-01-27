@@ -1,8 +1,11 @@
-module updatr
+module github.com/tiagovaldrich/updatr
 
 go 1.23
 
-require github.com/spf13/viper v1.19.0
+require (
+	github.com/spf13/viper v1.19.0
+	go.uber.org/zap v1.27.0
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
