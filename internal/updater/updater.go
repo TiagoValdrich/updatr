@@ -3,6 +3,9 @@ package updater
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 
 	"github.com/tiagovaldrich/updatr/internal/cli"
 
@@ -24,9 +27,25 @@ func (u *Updater) Update(arguments cli.Arguments) error {
 		return err
 	}
 
-	_, err := u.readDirectoriesOnPath(arguments.Path)
+	dirEntries, err := u.readDirectoriesOnPath(arguments.Path)
 	if err != nil {
 		return err
+	}
+
+	for _, dirEntry := range dirEntries {
+		if dirEntry.IsDir() {
+			u.logger.Infow("directory found, CD into it", "directory", dirEntry.Name())
+
+			err := u.runCommandsInDirectory(arguments.Path, dirEntry.Name())
+			if err != nil {
+				u.logger.Errorw(
+					"failed to run commands in directory",
+					"error", err,
+					"directory", dirEntry.Name(),
+					"path", *arguments.Path,
+				)
+			}
+		}
 	}
 
 	return nil
@@ -37,10 +56,30 @@ func (u *Updater) validatePath(path *string) error {
 		return fmt.Errorf("the provided path is nil")
 	}
 
-	pathInfo, err := os.Stat(*path)
+	if u.hasUserHomeDir(*path) {
+		newPath, err := u.replaceHomeDirAlias(*path)
+		if err != nil {
+			u.logger.Errorw("failed to replace home dir alias", "error", err)
 
-	if os.IsNotExist(err) {
-		return fmt.Errorf("the provided path does not exist")
+			return err
+		}
+
+		*path = newPath
+	}
+
+	pathInfo, err := os.Stat(*path)
+	if err != nil {
+		u.logger.Errorw(
+			"failed to get path info",
+			"error", err,
+			"path", *path,
+		)
+
+		if os.IsNotExist(err) {
+			return fmt.Errorf("the provided path does not exist")
+		}
+
+		return err
 	}
 
 	if !pathInfo.IsDir() {
@@ -58,13 +97,42 @@ func (u *Updater) readDirectoriesOnPath(path *string) ([]os.DirEntry, error) {
 		return nil, err
 	}
 
-	for _, file := range files {
-		if file.IsDir() {
-			u.logger.Infow("found directory", "name", file.Name())
-		} else {
-			u.logger.Infow("found file", "name", file.Name())
-		}
+	return files, nil
+}
+
+func (u *Updater) runCommandsInDirectory(path *string, directory string) error {
+	dirFullPath := filepath.Join(*path, directory)
+
+	cmd := exec.Command("ls", "-la")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dirFullPath
+
+	if err := cmd.Run(); err != nil {
+		u.logger.Errorw(
+			"failed to run command in directory",
+			"error", err,
+			"command", "ls -la",
+			"dirPath", dirFullPath,
+		)
+
+		return err
 	}
 
-	return files, nil
+	return nil
+}
+
+func (u *Updater) hasUserHomeDir(path string) bool {
+	return len(path) > 0 && path[0] == UserHomeDirAlias
+}
+
+func (u *Updater) replaceHomeDirAlias(path string) (string, error) {
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	newPath := strings.Replace(path, string(UserHomeDirAlias), userHomeDir, 1)
+
+	return newPath, nil
 }
