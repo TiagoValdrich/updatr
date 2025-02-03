@@ -3,7 +3,6 @@ package updater
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -103,20 +102,31 @@ func (u *Updater) readDirectoriesOnPath(path *string) ([]os.DirEntry, error) {
 func (u *Updater) runCommandsInDirectory(path *string, directory string) error {
 	dirFullPath := filepath.Join(*path, directory)
 
-	cmd := exec.Command("ls", "-la")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Dir = dirFullPath
+	// @TODO: Here we are going to read the commands provided from .toml file
+	commandsToRun := []string{
+		"git stash",
+		"git checkout master",
+		"git pull origin master",
+	}
 
-	if err := cmd.Run(); err != nil {
-		u.logger.Errorw(
-			"failed to run command in directory",
-			"error", err,
-			"command", "ls -la",
-			"dirPath", dirFullPath,
-		)
+	executor := NewExecutor(ExecutorParams{
+		Logger:  u.logger,
+		DirPath: dirFullPath,
+	})
 
-		return err
+	for _, command := range commandsToRun {
+		u.logger.Infow("running command", "command", command, "directory", directory)
+
+		if err := executor.Run(command); err != nil {
+			u.logger.Errorw(
+				"failed to run command",
+				"error", err,
+				"command", command,
+				"directory", directory,
+			)
+
+			return err
+		}
 	}
 
 	return nil
