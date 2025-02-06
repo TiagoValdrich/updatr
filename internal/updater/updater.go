@@ -102,34 +102,7 @@ func (u *Updater) readDirectoriesOnPath(path *string) ([]os.DirEntry, error) {
 func (u *Updater) runCommandsInDirectory(path *string, directory string) error {
 	dirFullPath := filepath.Join(*path, directory)
 
-	// @TODO: Here we are going to read the commands provided from .toml file
-	commandsToRun := []string{
-		"git stash",
-		"git checkout master",
-		"git pull origin master",
-	}
-
-	executor := NewExecutor(ExecutorParams{
-		Logger:  u.logger,
-		DirPath: dirFullPath,
-	})
-
-	for _, command := range commandsToRun {
-		u.logger.Infow("running command", "command", command, "directory", directory)
-
-		if err := executor.Run(command); err != nil {
-			u.logger.Errorw(
-				"failed to run command",
-				"error", err,
-				"command", command,
-				"directory", directory,
-			)
-
-			return err
-		}
-	}
-
-	return nil
+	return NewLangUpdater(u.logger, dirFullPath).Update()
 }
 
 func (u *Updater) hasUserHomeDir(path string) bool {
