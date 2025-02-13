@@ -12,21 +12,23 @@ import (
 )
 
 type Updater struct {
-	logger *zap.SugaredLogger
+	logger    *zap.SugaredLogger
+	arguments cli.Arguments
 }
 
-func NewUpdater(logger *zap.SugaredLogger) *Updater {
+func NewUpdater(logger *zap.SugaredLogger, arguments cli.Arguments) *Updater {
 	return &Updater{
-		logger: logger,
+		logger:    logger,
+		arguments: arguments,
 	}
 }
 
-func (u *Updater) Update(arguments cli.Arguments) error {
-	if err := u.validatePath(arguments.Path); err != nil {
+func (u *Updater) Update() error {
+	if err := u.validatePath(u.arguments.Path); err != nil {
 		return err
 	}
 
-	dirEntries, err := u.readDirectoriesOnPath(arguments.Path)
+	dirEntries, err := u.readDirectoriesOnPath(u.arguments.Path)
 	if err != nil {
 		return err
 	}
@@ -35,13 +37,13 @@ func (u *Updater) Update(arguments cli.Arguments) error {
 		if dirEntry.IsDir() {
 			u.logger.Infow("directory found, CD into it", "directory", dirEntry.Name())
 
-			err := u.runCommandsInDirectory(arguments.Path, dirEntry.Name())
+			err := u.runCommandsInDirectory(u.arguments.Path, dirEntry.Name())
 			if err != nil {
 				u.logger.Errorw(
 					"failed to run commands in directory",
 					"error", err,
 					"directory", dirEntry.Name(),
-					"path", *arguments.Path,
+					"path", *u.arguments.Path,
 				)
 			}
 		}
@@ -102,7 +104,7 @@ func (u *Updater) readDirectoriesOnPath(path *string) ([]os.DirEntry, error) {
 func (u *Updater) runCommandsInDirectory(path *string, directory string) error {
 	dirFullPath := filepath.Join(*path, directory)
 
-	return NewLangUpdater(u.logger, dirFullPath).Update()
+	return NewLangUpdater(u.logger, dirFullPath, u.arguments.ConfigFilePath).Update()
 }
 
 func (u *Updater) hasUserHomeDir(path string) bool {

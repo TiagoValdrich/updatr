@@ -13,8 +13,8 @@ func main() {
 
 	arguments := cliHandler.ReadArguments()
 
-	updater := updater.NewUpdater(cfg.Logger)
-	if err := updater.Update(arguments); err != nil {
+	updater := updater.NewUpdater(cfg.Logger, arguments)
+	if err := updater.Update(); err != nil {
 		panic(err)
 	}
 }

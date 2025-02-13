@@ -19,8 +19,12 @@ func NewHandler(logger *zap.SugaredLogger) *Handler {
 }
 
 func (h *Handler) ReadArguments() Arguments {
+	executableDirPath := h.getDefaultPath()
+	defaultConfigFilePath := filepath.Join(executableDirPath, "config.toml")
+
 	arguments := Arguments{}
-	arguments.Path = flag.String("path", h.getDefaultPath(), "")
+	arguments.Path = flag.String("path", executableDirPath, "Path to the directory to be updated")
+	arguments.ConfigFilePath = flag.String("config", defaultConfigFilePath, "Path to the configuration file, by the default it will look for a config.toml file in the executable directory")
 	flag.Parse()
 
 	return arguments

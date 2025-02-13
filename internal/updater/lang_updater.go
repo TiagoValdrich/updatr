@@ -8,21 +8,27 @@ import (
 )
 
 type LangUpdater struct {
-	logger    *zap.SugaredLogger
-	directory string
-	executor  *Executor
+	logger         *zap.SugaredLogger
+	directory      string
+	executor       *Executor
+	configLoader   *ConfigLoader
+	configFilePath *string
 }
 
-func NewLangUpdater(logger *zap.SugaredLogger, directory string) *LangUpdater {
+// Probably good to rethink how this is instantiated, too many parameters already
+func NewLangUpdater(logger *zap.SugaredLogger, directory string, configFilePath *string) *LangUpdater {
 	langUpdater := &LangUpdater{
-		logger:    logger,
-		directory: directory,
+		logger:         logger,
+		directory:      directory,
+		configFilePath: configFilePath,
 	}
 
 	langUpdater.executor = NewExecutor(ExecutorParams{
 		Logger:  logger,
 		DirPath: directory,
 	})
+
+	langUpdater.configLoader = NewConfigLoader(logger)
 
 	return langUpdater
 }
@@ -101,21 +107,16 @@ func (lu *LangUpdater) identifyProgrammingLanguage() (plangs.ProgrammingLanguage
 func (lu *LangUpdater) loadComandsFromProgramingLanguage(
 	programmingLanguage plangs.ProgrammingLanguage,
 ) ([]string, error) {
-	// here we should load the commands from the specific programming language
-	// from a toml file. This implementation is currently not done.
-
-	// @TODO: Here we are going to read the commands provided from .toml file
-	// identify programming language
-	defaultCommands := []string{
-		"git stash",
-		"git checkout master",
-		"git pull origin master",
+	err := lu.configLoader.LoadConfig(lu.configFilePath)
+	if err != nil {
+		return DefaultOperations, err
 	}
 
-	switch programmingLanguage {
-	case plangs.NodeJS, plangs.Go:
-		return defaultCommands, nil
-	default:
-		return []string{}, ErrLangNotSupported
+	lu.logger.Infow("config file loaded", "languageConfig", lu.configLoader.GetLanguageConfig())
+
+	if lu.configLoader.IsLanguageAvailable(programmingLanguage.String()) {
+		return lu.configLoader.GetCommandsForLanguage(programmingLanguage.String()), nil
 	}
+
+	return DefaultOperations, nil
 }

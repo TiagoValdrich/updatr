@@ -1,0 +1,15 @@
+[go]
+commands = [
+    "git stash",
+    "git checkout master",
+    "git pull origin master",
+    "make install",
+]
+
+[nodejs]
+commands = [
+    "git stash",
+    "git checkout master",
+    "git pull origin master",
+    "npm install",
+]

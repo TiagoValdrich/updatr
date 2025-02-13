@@ -7,3 +7,7 @@ type ProgrammingLanguageIdentifier interface {
 }
 
 type ProgrammingLanguage string
+
+func (pl ProgrammingLanguage) String() string {
+	return string(pl)
+}

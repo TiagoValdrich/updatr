@@ -1,5 +1,6 @@
 package cli
 
 type Arguments struct {
-	Path *string
+	Path           *string
+	ConfigFilePath *string
 }
