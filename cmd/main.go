@@ -11,7 +11,12 @@ func main() {
 
 	cliHandler := cli.NewHandler(cfg.Logger)
 
-	arguments := cliHandler.ReadArguments()
+	arguments, err := cliHandler.ReadArguments()
+	if err != nil {
+		cfg.Logger.Errorln(err)
+
+		return
+	}
 
 	updater := updater.NewUpdater(cfg.Logger, arguments)
 	if err := updater.Update(); err != nil {

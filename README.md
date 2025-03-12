@@ -16,8 +16,18 @@ If no configuration file is found, `updatr` will not execute any commands to avo
 
 ## Installation
 
+For now, you can only build the project from source. You must have Go installed on your machine.
+
+You must clone the repository and build the project using the following command:
+
 ```bash
-go install github.com/tiagovaldrich/updatr@latest
+make build -o updatr
+```
+
+And then you can execute the `updatr` binary.
+
+```bash
+./updatr --path /path/to/projects --config /path/to/config.toml
 ```
 
 ## Usage

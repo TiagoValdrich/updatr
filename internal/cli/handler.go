@@ -2,8 +2,6 @@ package cli
 
 import (
 	"flag"
-	"os"
-	"path/filepath"
 
 	"go.uber.org/zap"
 )
@@ -18,25 +16,19 @@ func NewHandler(logger *zap.SugaredLogger) *Handler {
 	}
 }
 
-func (h *Handler) ReadArguments() Arguments {
-	executableDirPath := h.getDefaultPath()
-	defaultConfigFilePath := filepath.Join(executableDirPath, "config.toml")
-
+func (h *Handler) ReadArguments() (Arguments, error) {
 	arguments := Arguments{}
-	arguments.Path = flag.String("path", executableDirPath, "Path to the directory to be updated")
-	arguments.ConfigFilePath = flag.String("config", defaultConfigFilePath, "Path to the configuration file, by the default it will look for a config.toml file in the executable directory")
+	arguments.Path = flag.String("path", "", "Path to the directory that will be scanned for the updates")
+	arguments.ConfigFilePath = flag.String("config", "", "Path to the configuration(.toml) file")
 	flag.Parse()
 
-	return arguments
-}
-
-func (h *Handler) getDefaultPath() string {
-	executablePath, err := os.Executable()
-	if err != nil {
-		h.logger.Errorw("failed to get executable path", "error", err)
-
-		panic(err)
+	if *arguments.Path == "" {
+		return arguments, ErrPathNotProvided
 	}
 
-	return filepath.Dir(executablePath)
+	if *arguments.ConfigFilePath == "" {
+		return arguments, ErrConfigFileNotProvided
+	}
+
+	return arguments, nil
 }
