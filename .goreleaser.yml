@@ -1,0 +1,20 @@
+version: 2.0
+project_name: updatr
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+archives:
+  - formats:
+      - tar.gz
+      - zip
+  - files:
+      - LICENSE
+      - README.md
+  
