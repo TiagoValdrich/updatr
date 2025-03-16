@@ -15,7 +15,11 @@ type ExecutorParams struct {
 	DirPath string
 }
 
-type Executor struct {
+type Executor interface {
+	Run(command string) error
+}
+
+type executor struct {
 	logger  *zap.SugaredLogger
 	Input   *os.File
 	Output  *os.File
@@ -23,8 +27,8 @@ type Executor struct {
 	DirPath string
 }
 
-func NewExecutor(params ExecutorParams) *Executor {
-	executor := &Executor{
+func NewExecutor(params ExecutorParams) Executor {
+	executor := &executor{
 		logger:  params.Logger,
 		Input:   params.Input,
 		Output:  params.Output,
@@ -37,7 +41,7 @@ func NewExecutor(params ExecutorParams) *Executor {
 	return executor
 }
 
-func (e *Executor) setDefaultParams() {
+func (e *executor) setDefaultParams() {
 	if e.Input == nil {
 		e.Input = os.Stdin
 	}
@@ -51,7 +55,7 @@ func (e *Executor) setDefaultParams() {
 	}
 }
 
-func (e *Executor) Run(command string) error {
+func (e *executor) Run(command string) error {
 	cmd := exec.Command("sh", "-c", command)
 	cmd.Stdin = e.Input
 	cmd.Stdout = e.Output

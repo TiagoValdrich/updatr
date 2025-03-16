@@ -53,6 +53,7 @@ commands = [
     "git pull origin master",
     "make install",
 ]
+ignore_projects = ["project5", "project9"]
 
 [nodejs]
 commands = [
@@ -61,6 +62,7 @@ commands = [
     "git pull origin master",
     "npm install",
 ]
+ignore_projects = ["project1", "project2"]
 ```
 
 ## How it Works

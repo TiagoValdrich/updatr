@@ -6,7 +6,8 @@ import (
 )
 
 type LanguageConfig struct {
-	Commands []string `toml:"commands"`
+	Commands       []string `toml:"commands"`
+	IgnoreProjects []string `toml:"ignore_projects"`
 }
 
 type ConfigLoader struct {
@@ -20,7 +21,7 @@ func NewConfigLoader(logger *zap.SugaredLogger) *ConfigLoader {
 	}
 }
 
-// Returns a mao where the keys are the programming language names
+// Returns a map, where the keys are the programming language names
 // and the values are the LanguageConfig structs
 func (cl *ConfigLoader) GetLanguageConfig() map[string]LanguageConfig {
 	return cl.languageConfig
@@ -41,7 +42,7 @@ func (cl *ConfigLoader) LoadConfig(filePath *string) error {
 	if filePath == nil {
 		cl.logger.Error("config file path is nil")
 
-		*filePath = DefaultConfigFilePath
+		return ErrInvalidConfigFile
 	}
 
 	if _, err := toml.DecodeFile(*filePath, &cl.languageConfig); err != nil {
@@ -51,4 +52,16 @@ func (cl *ConfigLoader) LoadConfig(filePath *string) error {
 	}
 
 	return nil
+}
+
+func (cl *ConfigLoader) CanIgnoreProject(language string, projectName string) bool {
+	ignoreProjects := cl.languageConfig[language].IgnoreProjects
+
+	for _, project := range ignoreProjects {
+		if project == projectName {
+			return true
+		}
+	}
+
+	return false
 }

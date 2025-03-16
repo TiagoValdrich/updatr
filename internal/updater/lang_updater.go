@@ -2,6 +2,7 @@ package updater
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/tiagovaldrich/updatr/internal/plangs"
 	"go.uber.org/zap"
@@ -10,7 +11,7 @@ import (
 type LangUpdater struct {
 	logger         *zap.SugaredLogger
 	directory      string
-	executor       *Executor
+	executor       Executor
 	configLoader   *ConfigLoader
 	configFilePath *string
 }
@@ -78,6 +79,13 @@ func (lu *LangUpdater) loadCommands() ([]string, error) {
 		)
 
 		return nil, err
+	}
+
+	projectName := filepath.Base(lu.directory)
+	if lu.configLoader.CanIgnoreProject(programmingLanguage.String(), projectName) {
+		lu.logger.Infow("ignoring project", "directory", lu.directory)
+
+		return []string{}, nil
 	}
 
 	return commands, nil

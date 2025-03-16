@@ -10,8 +10,6 @@ func NewConfig() *Config {
 	cfg := &Config{}
 
 	cfg.SetupLogger()
-	// here we are going to load environment variables
-	// that will load custom configurations to the application
 
 	return cfg
 }
