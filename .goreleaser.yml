@@ -11,10 +11,24 @@ builds:
       - amd64
       - arm64
 archives:
-  - formats:
-      - tar.gz
-      - zip
-  - files:
-      - LICENSE
+  - id: linux
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: tar.gz
+    files:
       - README.md
+      - LICENSE
+  
+  - id: darwin
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: tar.gz
+    files:
+      - README.md
+      - LICENSE
+  
+  - id: windows
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: zip
+    files:
+      - README.md
+      - LICENSE
   
