@@ -4,7 +4,7 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - main: ./cmd
+  - id: updatr
     binary: updatr
     env:
       - CGO_ENABLED=0
