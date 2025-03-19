@@ -16,12 +16,16 @@ If no configuration file is found, `updatr` will not execute any commands to avo
 
 ## Installation
 
-For now, you can only build the project from source. You must have Go installed on your machine.
-
-You must clone the repository and build the project using the following command:
+You can install the tool using the following command:
 
 ```bash
-make build -o updatr
+go install github.com/tiagovaldrich/updatr@latest
+```
+
+Or you can clone the repository and build the project.
+
+```bash
+make build
 ```
 
 And then you can execute the `updatr` binary.

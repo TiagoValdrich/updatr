@@ -5,10 +5,10 @@ install:
 	go mod vendor
 
 run:
-	go run cmd/main.go
+	go run main.go
 
 build:
-	go build -o updatr cmd/main.go
+	go build -o updatr main.go
 
 lint:
 	golangci-lint run ./...
