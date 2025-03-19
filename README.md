@@ -72,10 +72,7 @@ ignore_projects = ["project1", "project2"]
    - `go.mod` for Go projects
    - `package.json` for NodeJS projects
 3. Once detected, it executes the configured commands for that language in sequence
-4. If no configuration is found for a language, it falls back to default git operations:
-   - git stash
-   - git checkout master
-   - git pull origin master
+4. If no configuration is found for a language, it won't run any command to avoid unexpected behaviors
 
 ## Contributing
 
