@@ -1,9 +1,12 @@
 package config
 
-import "go.uber.org/zap"
+import (
+	"github.com/tiagovaldrich/updatr/internal/logger"
+	"go.uber.org/zap"
+)
 
 type Config struct {
-	Logger *zap.SugaredLogger
+	Logger logger.Logger
 }
 
 func NewConfig() *Config {
@@ -15,12 +18,20 @@ func NewConfig() *Config {
 }
 
 func (c *Config) SetupLogger() {
-	logger, err := zap.NewProduction()
+	c.setupDefaultLogger()
+}
+
+func (c *Config) setupDefaultLogger() {
+	config := zap.NewProductionConfig()
+	config.EncoderConfig.CallerKey = ""
+	config.EncoderConfig.TimeKey = ""
+
+	zapLogger, err := config.Build()
 	if err != nil {
 		panic(err)
 	}
 
-	sugarLogger := logger.Sugar()
-
-	c.Logger = sugarLogger
+	c.Logger = logger.NewZapLogger(logger.ZapLoggerParams{
+		ZapLogger: zapLogger.Sugar(),
+	})
 }

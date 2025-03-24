@@ -2,7 +2,7 @@ package updater
 
 import (
 	"github.com/BurntSushi/toml"
-	"go.uber.org/zap"
+	"github.com/tiagovaldrich/updatr/internal/logger"
 )
 
 type LanguageConfig struct {
@@ -11,11 +11,11 @@ type LanguageConfig struct {
 }
 
 type ConfigLoader struct {
-	logger         *zap.SugaredLogger
+	logger         logger.Logger
 	languageConfig map[string]LanguageConfig
 }
 
-func NewConfigLoader(logger *zap.SugaredLogger) *ConfigLoader {
+func NewConfigLoader(logger logger.Logger) *ConfigLoader {
 	return &ConfigLoader{
 		logger: logger,
 	}
@@ -46,7 +46,7 @@ func (cl *ConfigLoader) LoadConfig(filePath *string) error {
 	}
 
 	if _, err := toml.DecodeFile(*filePath, &cl.languageConfig); err != nil {
-		cl.logger.Errorw("failed to decode toml configuration file", "error", err)
+		cl.logger.Error("failed to decode toml configuration file", "error", err)
 
 		return err
 	}

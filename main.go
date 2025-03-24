@@ -13,7 +13,7 @@ func main() {
 
 	arguments, err := cliHandler.ReadArguments()
 	if err != nil {
-		cfg.Logger.Errorln(err)
+		cfg.Logger.Error("failed to read cli arguments", err)
 
 		return
 	}

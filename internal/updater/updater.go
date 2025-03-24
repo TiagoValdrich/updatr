@@ -7,16 +7,15 @@ import (
 	"strings"
 
 	"github.com/tiagovaldrich/updatr/internal/cli"
-
-	"go.uber.org/zap"
+	"github.com/tiagovaldrich/updatr/internal/logger"
 )
 
 type Updater struct {
-	logger    *zap.SugaredLogger
+	logger    logger.Logger
 	arguments cli.Arguments
 }
 
-func NewUpdater(logger *zap.SugaredLogger, arguments cli.Arguments) *Updater {
+func NewUpdater(logger logger.Logger, arguments cli.Arguments) *Updater {
 	return &Updater{
 		logger:    logger,
 		arguments: arguments,
@@ -35,11 +34,11 @@ func (u *Updater) Update() error {
 
 	for _, dirEntry := range dirEntries {
 		if dirEntry.IsDir() {
-			u.logger.Infow("directory found, CD into it", "directory", dirEntry.Name())
+			u.logger.Info("directory found, CD into it", "directory", dirEntry.Name())
 
 			err := u.runCommandsInDirectory(u.arguments.Path, dirEntry.Name())
 			if err != nil {
-				u.logger.Errorw(
+				u.logger.Error(
 					"failed to run commands in directory",
 					"error", err,
 					"directory", dirEntry.Name(),
@@ -60,7 +59,7 @@ func (u *Updater) validatePath(path *string) error {
 	if u.hasUserHomeDir(*path) {
 		newPath, err := u.replaceHomeDirAlias(*path)
 		if err != nil {
-			u.logger.Errorw("failed to replace home dir alias", "error", err)
+			u.logger.Error("failed to replace home dir alias", "error", err)
 
 			return err
 		}
@@ -70,7 +69,7 @@ func (u *Updater) validatePath(path *string) error {
 
 	pathInfo, err := os.Stat(*path)
 	if err != nil {
-		u.logger.Errorw(
+		u.logger.Error(
 			"failed to get path info",
 			"error", err,
 			"path", *path,
@@ -93,7 +92,7 @@ func (u *Updater) validatePath(path *string) error {
 func (u *Updater) readDirectoriesOnPath(path *string) ([]os.DirEntry, error) {
 	files, err := os.ReadDir(*path)
 	if err != nil {
-		u.logger.Errorw("failed to read directory", "error", err, "path", *path)
+		u.logger.Error("failed to read directory", "error", err, "path", *path)
 
 		return nil, err
 	}

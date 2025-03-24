@@ -3,14 +3,14 @@ package cli
 import (
 	"flag"
 
-	"go.uber.org/zap"
+	"github.com/tiagovaldrich/updatr/internal/logger"
 )
 
 type Handler struct {
-	logger *zap.SugaredLogger
+	logger logger.Logger
 }
 
-func NewHandler(logger *zap.SugaredLogger) *Handler {
+func NewHandler(logger logger.Logger) *Handler {
 	return &Handler{
 		logger: logger,
 	}

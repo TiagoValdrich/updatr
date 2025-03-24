@@ -4,11 +4,11 @@ import (
 	"os"
 	"os/exec"
 
-	"go.uber.org/zap"
+	"github.com/tiagovaldrich/updatr/internal/logger"
 )
 
 type ExecutorParams struct {
-	Logger  *zap.SugaredLogger
+	Logger  logger.Logger
 	Input   *os.File
 	Output  *os.File
 	Error   *os.File
@@ -20,7 +20,7 @@ type Executor interface {
 }
 
 type executor struct {
-	logger  *zap.SugaredLogger
+	logger  logger.Logger
 	Input   *os.File
 	Output  *os.File
 	Error   *os.File
@@ -63,7 +63,7 @@ func (e *executor) Run(command string) error {
 	cmd.Dir = e.DirPath
 
 	if err := cmd.Run(); err != nil {
-		e.logger.Errorw(
+		e.logger.Error(
 			"failed to run command",
 			"error", err,
 			"command", command,

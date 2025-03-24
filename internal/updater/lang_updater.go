@@ -4,12 +4,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/tiagovaldrich/updatr/internal/logger"
 	"github.com/tiagovaldrich/updatr/internal/plangs"
-	"go.uber.org/zap"
 )
 
 type LangUpdater struct {
-	logger         *zap.SugaredLogger
+	logger         logger.Logger
 	directory      string
 	executor       Executor
 	configLoader   *ConfigLoader
@@ -17,7 +17,7 @@ type LangUpdater struct {
 }
 
 // Probably good to rethink how this is instantiated, too many parameters already
-func NewLangUpdater(logger *zap.SugaredLogger, directory string, configFilePath *string) *LangUpdater {
+func NewLangUpdater(logger logger.Logger, directory string, configFilePath *string) *LangUpdater {
 	langUpdater := &LangUpdater{
 		logger:         logger,
 		directory:      directory,
@@ -37,16 +37,16 @@ func NewLangUpdater(logger *zap.SugaredLogger, directory string, configFilePath 
 func (lu *LangUpdater) Update() error {
 	commandsToRun, err := lu.loadCommands()
 	if err != nil {
-		lu.logger.Errorw("failed to load commands", "error", err)
+		lu.logger.Error("failed to load commands", "error", err)
 
 		return err
 	}
 
 	for _, command := range commandsToRun {
-		lu.logger.Infow("running command", "command", command, "directory", lu.directory)
+		lu.logger.Info("running command", "command", command, "directory", lu.directory)
 
 		if err := lu.executor.Run(command); err != nil {
-			lu.logger.Errorw(
+			lu.logger.Error(
 				"failed to run command",
 				"error", err,
 				"command", command,
@@ -63,16 +63,16 @@ func (lu *LangUpdater) Update() error {
 func (lu *LangUpdater) loadCommands() ([]string, error) {
 	programmingLanguage, err := lu.identifyProgrammingLanguage()
 	if err != nil {
-		lu.logger.Errorw("failed to identify programming language", "error", err)
+		lu.logger.Error("failed to identify programming language", "error", err)
 
 		return nil, err
 	}
 
-	lu.logger.Infow("programming language identified", "programming_language", programmingLanguage)
+	lu.logger.Info("programming language identified", "programming_language", programmingLanguage)
 
 	commands, err := lu.loadComandsFromProgramingLanguage(programmingLanguage)
 	if err != nil {
-		lu.logger.Errorw(
+		lu.logger.Error(
 			"failed to load commands from programming language",
 			"error", err,
 			"programming_language", programmingLanguage,
@@ -83,7 +83,7 @@ func (lu *LangUpdater) loadCommands() ([]string, error) {
 
 	projectName := filepath.Base(lu.directory)
 	if lu.configLoader.CanIgnoreProject(programmingLanguage.String(), projectName) {
-		lu.logger.Infow("ignoring project", "directory", lu.directory)
+		lu.logger.Info("ignoring project", "directory", lu.directory)
 
 		return []string{}, nil
 	}
@@ -120,7 +120,7 @@ func (lu *LangUpdater) loadComandsFromProgramingLanguage(
 		return DefaultOperations, err
 	}
 
-	lu.logger.Infow("config file loaded", "languageConfig", lu.configLoader.GetLanguageConfig())
+	lu.logger.Info("config file loaded", "languageConfig", lu.configLoader.GetLanguageConfig())
 
 	if lu.configLoader.IsLanguageAvailable(programmingLanguage.String()) {
 		return lu.configLoader.GetCommandsForLanguage(programmingLanguage.String()), nil
