@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/tiagovaldrich/updatr/internal/cli"
 	"github.com/tiagovaldrich/updatr/internal/logger"
@@ -32,21 +33,31 @@ func (u *Updater) Update() error {
 		return err
 	}
 
+	wg := sync.WaitGroup{}
+
 	for _, dirEntry := range dirEntries {
 		if dirEntry.IsDir() {
+			wg.Add(1)
+
 			u.logger.Info("directory found, CD into it", "directory", dirEntry.Name())
 
-			err := u.runCommandsInDirectory(u.arguments.Path, dirEntry.Name())
-			if err != nil {
-				u.logger.Error(
-					"failed to run commands in directory",
-					"error", err,
-					"directory", dirEntry.Name(),
-					"path", *u.arguments.Path,
-				)
-			}
+			go func(dirName string) {
+				defer wg.Done()
+
+				err := u.runCommandsInDirectory(u.arguments.Path, dirEntry.Name())
+				if err != nil {
+					u.logger.Error(
+						"failed to run commands in directory",
+						"error", err,
+						"directory", dirEntry.Name(),
+						"path", *u.arguments.Path,
+					)
+				}
+			}(dirEntry.Name())
 		}
 	}
+
+	wg.Wait()
 
 	return nil
 }

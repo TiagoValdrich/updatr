@@ -106,7 +106,6 @@ func (lu *LangUpdater) identifyProgrammingLanguage() (plangs.ProgrammingLanguage
 		if programmingLanguage != "" {
 			return programmingLanguage, nil
 		}
-
 	}
 
 	return "", ErrLangNotSupported
