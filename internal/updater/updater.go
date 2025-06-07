@@ -41,7 +41,7 @@ func (u *Updater) Update() error {
 
 			u.logger.Info("directory found, CD into it", "directory", dirEntry.Name())
 
-			go func(dirName string) {
+			go func() {
 				defer wg.Done()
 
 				err := u.runCommandsInDirectory(u.arguments.Path, dirEntry.Name())
@@ -53,7 +53,7 @@ func (u *Updater) Update() error {
 						"path", *u.arguments.Path,
 					)
 				}
-			}(dirEntry.Name())
+			}()
 		}
 	}
 
